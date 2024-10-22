@@ -1,4 +1,4 @@
-    
+
     const wrapper = document.querySelector('.wrapper');
     const loginLink = document.querySelector('.login-link');
     const registerLink = document.querySelector('.register-link');
@@ -6,13 +6,18 @@
     const registerPOST = document.getElementById('btnRegister');
 
     if(loginPOST){
-        loginPOST.addEventListener('click', () => {
+        loginPOST.addEventListener('click', async() => {
             const username = document.getElementById('usernameLogin').value;
             const password = document.getElementById('passwordLogin').value;
 
+            const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+
             const data = JSON.stringify({
                 username: username,
-                password: password
+                password: hashHex
             });
 
             fetch('http://localhost:3000/login', {
@@ -38,10 +43,10 @@
     }
 
     if(registerPOST){
-        registerPOST.addEventListener('click', () => {
+        registerPOST.addEventListener('click', async () => {
             const username = document.getElementById('usernameRegister').value;
             const email = document.getElementById('emailRegister').value;
-            const password = document.getElementById('passwordRegister').value;
+            let password = document.getElementById('passwordRegister').value;
             const confirmPassword = document.getElementById('passwordRegisterVer').value;
             
             if(password !== confirmPassword){
@@ -54,10 +59,15 @@
                 return;
             }
 
+            const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+
             const data = JSON.stringify({
                 username: username,
                 email: email,
-                password: password
+                password: hashHex
             });
 
             fetch('http://localhost:3000/users',{
